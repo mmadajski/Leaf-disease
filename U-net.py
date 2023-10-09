@@ -1,9 +1,10 @@
 import numpy as np
-import pandas as pd
 import tensorflow as tf
 import os
 import cv2
 from random import sample, seed
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 # Read and prepare data.
@@ -100,15 +101,17 @@ print("IOU test: %.2f" % IOU_test)
 test_prob_to_class_np = tf.get_static_value(test_prob_to_class)
 
 # Saving sample images and masks
-for i in range(10):
+for i in range(3):
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-    fig.suptitle("Sample image, prediction and mask.")
     image = (images_test[i] * 255).astype("uint8")
     pred_mask = (test_prob_to_class_np[i] * 255).astype("uint8")
     mask = (masks_test[i] * 255).astype("uint8")
 
+    ax1.set_title("Sample image")
     ax1.imshow(image)
+    ax2.set_title("Predicted mask")
     ax2.imshow(pred_mask, cmap="Greys")
+    ax3.set_title("True mask")
     ax3.imshow(mask, cmap="Greys")
 
     plt.savefig("Sample_" + str(i) + ".png")
