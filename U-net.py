@@ -1,8 +1,8 @@
 import numpy as np
 import tensorflow as tf
 import os
-import cv2
 from random import sample, seed
+from Utils import load_image, load_mask
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -16,32 +16,11 @@ images_names = os.listdir(images_path)
 seed(123)
 training_images_names = sample(images_names, int(len(images_names) * 0.7))
 test_images_names = set(images_names) - set(training_images_names)
-images_train = []
-masks_train = []
-images_test = []
-masks_test = []
 
-for name in training_images_names:
-    image = cv2.imread(os.path.join(images_path, name))
-    image_resize = cv2.resize(image, [256, 256])
-    images_train.append(image_resize)
-
-    mask_name = name[0:-3] + "png"
-    mask = cv2.split(cv2.imread(os.path.join(masks_path, mask_name)))[2]
-    mask_resize = cv2.resize(mask, [256, 256])
-    mask_bin = np.where((mask_resize > 64), 255, 0)
-    masks_train.append(mask_bin)
-
-for name in test_images_names:
-    image = cv2.imread(os.path.join(images_path, name))
-    image_resize = cv2.resize(image, [256, 256])
-    images_test.append(image_resize)
-
-    mask_name = name[0:-3] + "png"
-    mask = cv2.split(cv2.imread(os.path.join(masks_path, mask_name)))[2]
-    mask_resize = cv2.resize(mask, [256, 256])
-    mask_bin = np.where((mask_resize > 64), 255, 0)
-    masks_test.append(mask_bin)
+images_train = [load_image(os.path.join(images_path, name)) for name in training_images_names]
+masks_train = [load_mask(os.path.join(masks_path, name[0:-3] + "png")) for name in training_images_names]
+images_test = [load_image(os.path.join(images_path, name)) for name in test_images_names]
+masks_test = [load_mask(os.path.join(masks_path, name[0:-3] + "png")) for name in test_images_names]
 
 # Normalization
 images_train = np.array(images_train) / 255
@@ -101,7 +80,7 @@ print("IOU test: %.2f" % IOU_test)
 test_prob_to_class_np = tf.get_static_value(test_prob_to_class)
 
 # Saving sample images and masks
-for i in range(3):
+for i in range(10):
     fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
     image = (images_test[i] * 255).astype("uint8")
     pred_mask = (test_prob_to_class_np[i] * 255).astype("uint8")
