@@ -56,25 +56,31 @@ outputs = tf.keras.layers.Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
 model = tf.keras.Model([model_in], [outputs])
 model.compile(optimizer="adam", loss="binary_crossentropy", metrics=['accuracy'])
+
+# Training
 history = model.fit(images_train, masks_train, batch_size=25, epochs=50)
 
 # Save history data.
 epochs = [i for i in range(len(history.history["accuracy"]))]
 plt.plot(epochs, history.history["accuracy"])
+plt.title("Accuracy over epochs")
 plt.savefig("accuracy.png")
 plt.clf()
 
 plt.plot(epochs, history.history["loss"])
+plt.title("Loss over epochs")
 plt.savefig("loss.png")
 
+# Training IOU
 calc_iou = tf.keras.metrics.IoU(num_classes=2, target_class_ids=[1])
 train_pred = model.predict(images_train)
-prob_to_class = tf.map_fn(fn=lambda x: float(int(x > 0.5)), elems=train_pred)
+prob_to_class = tf.map_fn(fn=lambda x: int(x > 0.5), elems=train_pred, dtype="int32")
 IOU_train = calc_iou(prob_to_class, masks_train)
 print(f"IOU train: %.2f." % IOU_train)
 
+# Test IOU
 test_pred = model.predict(images_test)
-test_prob_to_class = tf.map_fn(fn=lambda x: float(int(x > 0.5)), elems=test_pred)
+test_prob_to_class = tf.map_fn(fn=lambda x: int(x > 0.5), elems=test_pred, dtype="int32")
 IOU_test = calc_iou(test_prob_to_class, masks_test)
 print("IOU test: %.2f" % IOU_test)
 test_prob_to_class_np = tf.get_static_value(test_prob_to_class)
