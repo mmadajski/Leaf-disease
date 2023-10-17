@@ -60,16 +60,21 @@ model.compile(optimizer="adam", loss="binary_crossentropy", metrics=['accuracy']
 # Training
 history = model.fit(images_train, masks_train, batch_size=25, epochs=50)
 
+# Create directory for generated images
+if not os.path.exists(".\\examples"):
+    os.makedirs(".\\examples")
+
 # Save history data.
 epochs = [i for i in range(len(history.history["accuracy"]))]
 plt.plot(epochs, history.history["accuracy"])
 plt.title("Accuracy over epochs")
-plt.savefig("accuracy.png")
+plt.ylim([0, 1])
+plt.savefig(".\\examples\\Accuracy_over_epochs.png")
 plt.clf()
 
 plt.plot(epochs, history.history["loss"])
 plt.title("Loss over epochs")
-plt.savefig("loss.png")
+plt.savefig(".\\examples\\Loss_over_epochs.png")
 
 # Training IOU
 calc_iou = tf.keras.metrics.IoU(num_classes=2, target_class_ids=[1])
@@ -99,4 +104,4 @@ for i in range(10):
     ax3.set_title("True mask")
     ax3.imshow(mask, cmap="Greys")
 
-    plt.savefig("Sample_" + str(i) + ".png")
+    plt.savefig(".\\examples\\Sample_" + str(i) + ".png")
