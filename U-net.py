@@ -8,9 +8,8 @@ matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 
 # Read and prepare data.
-path = os.getcwd()
-images_path = os.path.join(path, "data\\data\\images")
-masks_path = os.path.join(path, "data\\data\\masks")
+images_path = ".\\data\\data\\images"
+masks_path = ".\\data\\data\\masks"
 images_names = os.listdir(images_path)
 
 seed(123)
