@@ -26,7 +26,7 @@ Finally, there is another convolution layer, which has 1 filter and a sigmoidal 
 
 ## Training 
 
-The model is trained using the adam optimizer, binary cross entropy as a loss function, 15 epochs and 25 batches.
+The model is trained using the adam optimizer, binary cross entropy as a loss function, 15 epochs and batch size equal to 25.
 
 ## Results
 
