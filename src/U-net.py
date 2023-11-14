@@ -2,7 +2,7 @@ import numpy as np
 import tensorflow as tf
 import os
 from random import sample, seed
-from Utils import load_image, load_mask
+from Utils import load_image, load_mask, calculate_iou, save_samples
 import matplotlib
 matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # Read and prepare data.
 images_path = ".\\data\\data\\images"
 masks_path = ".\\data\\data\\masks"
-images_names = os.listdir(images_path)
+images_names = os.listdir(images_path)[0:100]
 
 seed(123)
 training_images_names = sample(images_names, int(len(images_names) * 0.7))
@@ -57,7 +57,7 @@ model = tf.keras.Model([model_in], [outputs])
 model.compile(optimizer="adam", loss="binary_crossentropy", metrics=['accuracy'])
 
 # Training
-history = model.fit(images_train, masks_train, batch_size=25, epochs=50)
+history = model.fit(images_train, masks_train, batch_size=25, epochs=2)
 
 # Create directory for generated images
 if not os.path.exists(".\\examples"):
@@ -76,31 +76,12 @@ plt.title("Loss over epochs")
 plt.savefig(".\\examples\\Loss_over_epochs.png")
 
 # Training IOU
-calc_iou = tf.keras.metrics.IoU(num_classes=2, target_class_ids=[1])
-train_pred = model.predict(images_train)
-prob_to_class = tf.map_fn(fn=lambda x: int(x > 0.5), elems=train_pred, dtype="int32")
-IOU_train = calc_iou(prob_to_class, masks_train)
-print(f"IOU train: %.2f." % IOU_train)
+iou_train = calculate_iou(model, images_train, masks_train)
+print(f"IOU train: %.2f." % iou_train)
 
 # Test IOU
-test_pred = model.predict(images_test)
-test_prob_to_class = tf.map_fn(fn=lambda x: int(x > 0.5), elems=test_pred, dtype="int32")
-IOU_test = calc_iou(test_prob_to_class, masks_test)
-print("IOU test: %.2f" % IOU_test)
-test_prob_to_class_np = tf.get_static_value(test_prob_to_class)
+iou_test = calculate_iou(model, images_test, masks_test)
+print("IOU test: %.2f" % iou_test)
 
 # Saving sample images and masks
-for i in range(10):
-    fig, (ax1, ax2, ax3) = plt.subplots(1, 3)
-    image = (images_test[i] * 255).astype("uint8")
-    pred_mask = (test_prob_to_class_np[i] * 255).astype("uint8")
-    mask = (masks_test[i] * 255).astype("uint8")
-
-    ax1.set_title("Sample image")
-    ax1.imshow(image)
-    ax2.set_title("Predicted mask")
-    ax2.imshow(pred_mask, cmap="Greys")
-    ax3.set_title("True mask")
-    ax3.imshow(mask, cmap="Greys")
-
-    plt.savefig(".\\examples\\Sample_" + str(i) + ".png")
+save_samples(model, images_test[0:10], masks_test[0:10], ".\\examples")
