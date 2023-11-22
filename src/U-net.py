@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 # Read and prepare data.
 images_path = ".\\data\\data\\images"
 masks_path = ".\\data\\data\\masks"
-images_names = os.listdir(images_path)[0:100]
+images_names = os.listdir(images_path)
 
 seed(123)
 training_images_names = sample(images_names, int(len(images_names) * 0.7))
@@ -57,7 +57,7 @@ model = tf.keras.Model([model_in], [outputs])
 model.compile(optimizer="adam", loss="binary_crossentropy", metrics=['accuracy'])
 
 # Training
-history = model.fit(images_train, masks_train, batch_size=25, epochs=2)
+history = model.fit(images_train, masks_train, batch_size=25, epochs=15)
 
 # Create directory for generated images
 if not os.path.exists(".\\examples"):
